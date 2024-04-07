@@ -50,7 +50,7 @@ struct dinode {
 // Block of free map containing bit for block b
 #define BBLOCK(b, sb) ((b)/BPB + sb.bmapstart)
 
-// Directory is a file containing a sequence of dirent structures.
+// 目录是包含一系列不同结构的文件。Directory is a file containing a sequence of dirent structures.
 #define DIRSIZ 14
 
 struct dirent {

@@ -13,21 +13,22 @@ void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
-
+// strcut run是每个空闲页面的列表元素
 struct run {
   struct run *next;
 };
-
+// 空闲列表受自旋锁的保护，列表和锁包装在一个结构中，以明确锁保护结构中的字段。
 struct {
   struct spinlock lock;
   struct run *freelist;
 } kmem;
-
+// kinit初始化空闲列表以保存内核末尾和PHYSTOP之间的每个页面
 void
 kinit()
 {
   initlock(&kmem.lock, "kmem");
-  freerange(end, (void*)PHYSTOP);
+  freerange(end, (void*)PHYSTOP);  //xv6假设机器又128MB RAM，
+  // freerange通过每页调用将内存添加到空闲列表kfree
 }
 
 void
@@ -42,7 +43,7 @@ freerange(void *pa_start, void *pa_end)
 // Free the page of physical memory pointed at by pa,
 // which normally should have been returned by a
 // call to kalloc().  (The exception is when
-// initializing the allocator; see kinit above.)
+// initializing the allocator; see kinit above.) 释放pa指向的物理地址页
 void
 kfree(void *pa)
 {
@@ -51,20 +52,20 @@ kfree(void *pa)
   if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
     panic("kfree");
 
-  // Fill with junk to catch dangling refs.
+  // Fill with junk to catch dangling refs. 都设为1
   memset(pa, 1, PGSIZE);
 
-  r = (struct run*)pa;
+  r = (struct run*)pa; //强制转换
 
   acquire(&kmem.lock);
-  r->next = kmem.freelist;
-  kmem.freelist = r;
+  r->next = kmem.freelist; //记录空闲列表的旧开始 r->next
+  kmem.freelist = r; //将空闲列表设置为 r
   release(&kmem.lock);
 }
 
-// Allocate one 4096-byte page of physical memory.
+// Allocate one 4096-byte page of physical memory. kalloc()用来分配物理页
 // Returns a pointer that the kernel can use.
-// Returns 0 if the memory cannot be allocated.
+// Returns 0 if the memory cannot be allocated. 
 void *
 kalloc(void)
 {

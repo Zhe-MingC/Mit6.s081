@@ -32,20 +32,20 @@ exec(char *path, char **argv)
   struct proc *p = myproc();
 
   begin_op();
-
+  // namei时用来打开命名的二进制文件path
   if((ip = namei(path)) == 0){
     end_op();
     return -1;
   }
   ilock(ip);
 
-  // Check ELF header
+  // Check ELF header ，读取ELF表头
   if(readi(ip, 0, (uint64)&elf, 0, sizeof(elf)) != sizeof(elf))
     goto bad;
 
   if(elf.magic != ELF_MAGIC)
     goto bad;
-
+  // 分配没有用户映射的新页表，
   if((pagetable = proc_pagetable(p)) == 0)
     goto bad;
 
@@ -62,9 +62,11 @@ exec(char *path, char **argv)
     if(ph.vaddr % PGSIZE != 0)
       goto bad;
     uint64 sz1;
+    // 为每个ELF段分配内存uvmalloc
     if((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz, flags2perm(ph.flags))) == 0)
       goto bad;
     sz = sz1;
+    // 将每个段加载到内存中loadseg
     if(loadseg(pagetable, ph.vaddr, ip, ph.off, ph.filesz) < 0)
       goto bad;
   }
@@ -149,7 +151,7 @@ loadseg(pagetable_t pagetable, uint64 va, struct inode *ip, uint offset, uint sz
 {
   uint i, n;
   uint64 pa;
-
+  // 使用 walkaddr 查找要写入 ELF 段的每个页面的已分配内存的物理地址，以及用readi 从文件中读取
   for(i = 0; i < sz; i += PGSIZE){
     pa = walkaddr(pagetable, va + i);
     if(pa == 0)

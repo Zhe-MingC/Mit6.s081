@@ -4,7 +4,9 @@
 #include "user/user.h"
 
 char buf[512];
-
+/**
+ * @brief:统计字数w、行数l、字节数c
+*/
 void
 wc(int fd, char *name)
 {

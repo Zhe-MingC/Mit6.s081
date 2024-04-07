@@ -28,7 +28,7 @@ struct spinlock wait_lock;
 
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
-// guard page.
+// guard page. 将每个堆栈映射到KSTACK, 为无效的堆栈保存页流出空间
 void
 proc_mapstacks(pagetable_t kpgtbl)
 {
@@ -255,7 +255,7 @@ userinit(void)
 }
 
 // Grow or shrink user memory by n bytes.
-// Return 0 on success, -1 on failure.
+// Return 0 on success, -1 on failure. 进程收缩或增加其内存的系统调用
 int
 growproc(int n)
 {

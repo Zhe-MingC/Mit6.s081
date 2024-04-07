@@ -3,7 +3,7 @@
 #include "user/user.h"
 #include "kernel/fs.h"
 #include "kernel/fcntl.h"
-
+//找到/后的第一个字符
 char*
 fmtname(char *path)
 {
@@ -22,7 +22,7 @@ fmtname(char *path)
   memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
   return buf;
 }
-
+// stat以文件名作为参数，fstat以文件描述符作为参数
 void
 ls(char *path)
 {
@@ -36,13 +36,13 @@ ls(char *path)
     return;
   }
 
-  if(fstat(fd, &st) < 0){
+  if(fstat(fd, &st) < 0){ //将文件描述符fd的信息写入结构体st中
     fprintf(2, "ls: cannot stat %s\n", path);
     close(fd);
     return;
   }
 
-  switch(st.type){
+  switch(st.type){ //判断st的类型
   case T_DEVICE:
   case T_FILE:
     printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
@@ -55,16 +55,17 @@ ls(char *path)
     }
     strcpy(buf, path);
     p = buf+strlen(buf);
-    *p++ = '/';
+    *p++ = '/'; //
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
       if(de.inum == 0)
         continue;
       memmove(p, de.name, DIRSIZ);
       p[DIRSIZ] = 0;
-      if(stat(buf, &st) < 0){
+      if(stat(buf, &st) < 0){ //这只是给文件加上了完整的相对路径
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
+      // printf("%s %d %d %d\n", buf, st.type, st.ino, st.size);
       printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;

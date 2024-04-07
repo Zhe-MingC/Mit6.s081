@@ -16,7 +16,7 @@ uint64 timer_scratch[NCPU][5];
 // assembly code in kernelvec.S for machine-mode timer interrupt.
 extern void timervec();
 
-// entry.S jumps here in machine mode on stack0.
+// entry.S jumps here in machine mode on stack0. 有了堆栈之后进入到该位置
 void
 start()
 {

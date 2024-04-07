@@ -1,11 +1,11 @@
-        # qemu -kernel loads the kernel at 0x80000000
+        # qemu -kernel loads the kernel at 0x80000000 qemu将kernel加载到0x80000000位置
         # and causes each hart (i.e. CPU) to jump there.
         # kernel.ld causes the following code to
         # be placed at 0x80000000.
 .section .text
 .global _entry
 _entry:
-        # set up a stack for C.
+        # set up a stack for C. 设置一个堆栈，以便xv6可以运行C代码，初始堆栈为stack0
         # stack0 is declared in start.c,
         # with a 4096-byte stack per CPU.
         # sp = stack0 + (hartid * 4096)
